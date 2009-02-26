@@ -1,0 +1,44 @@
+  *******************************************************
+  * This is very experimental code, and has not been    *
+  * tested on a wide range of databases.                *
+  *                                                     *
+  * Please exercise caution!                            *
+  *                                                     *
+  * Patches and suggestions for improvement may be      *
+  * submitted to the mailing list on rubyforge.         *
+  *******************************************************
+
+= acts_as_materialized_tree
+
+Allows you to create a model which forms a "materialized tree", that is, one
+where each node contains an explicit path. This allows for efficient subtree
+searches [expensive in acts_as_tree] and insertion and removal of children
+[expensive in acts_as_nested_set]
+
+Requires ActiveRecord 2.1.x or later.
+
+=== Example
+
+In your model:
+
+  class Foo < ActiveRecord::Base
+    acts_as_materialized_tree
+  end
+
+  a = Foo.find(1)
+  p a.children.count                     # count done via SQL
+  p a.descendants.find(:name=>'brian')   # search in subtree only
+
+In your migration:
+
+  create_table :foos do |t|
+    t.string   :path,       :null => false, :default => ""
+    t.integer  :next_child, :null => false, :default => 0
+  end
+  add_index :foos, :path, :unique => true
+
+See ActiveRecord::Acts::MaterializedTree::ClassMethods and
+ActiveRecord::Acts::MaterializedTree::InstanceMethods for more information.
+
+Copyright (C) 2008 Brian Candler <B.Candler@pobox.com>. Released under the
+MIT licence.
